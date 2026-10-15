@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BULAT // SCADA-RESUME v2.9</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #05080d;
+    --bg-1: #0a1018;
+    --bg-2: #0f1824;
+    --bg-3: #141f2e;
+    --line: #1c2a3d;
+    --line-bright: #2a4060;
+    --text: #d6e4f0;
+    --text-dim: #7a8ca3;
+    --text-mute: #4a5a70;
+    --cyan: #00d4ff;
+    --cyan-dim: #0088aa;
+    --green: #00ff9d;
+    --green-dim: #00aa66;
+    --orange: #ff9500;
+    --red: #ff3860;
+    --yellow: #ffd60a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg-0);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at top, rgba(0, 212, 255, 0.08), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    border: 1px solid var(--line-bright);
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    padding: 28px 32px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .header::before,
+  .header::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--cyan);
+  }
+  .header::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+  .header::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .name-block {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .avatar {
+    width: 96px;
+    height: 96px;
+    border: 1px solid var(--cyan);
+    background: var(--bg-3);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2), inset 0 0 20px rgba(0, 212, 255, 0.1);
+  }
+
+  .avatar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 212, 255, 0.04) 2px,
+      rgba(0, 212, 255, 0.04) 3px
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .avatar::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.6;
+    z-index: 3;
+    animation: scanFeed 3s linear infinite;
+  }
+
+  @keyframes scanFeed {
+    0% { top: -2px; }
+    100% { top: 100%; }
+  }
+
+  .avatar-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+    z-index: 1;
+  }
+
+  .avatar-corners::before,
+  .avatar-corners::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--green);
+    z-index: 4;
+  }
+  .avatar-corners::before { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+  .avatar-corners::after { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+
+  .avatar-tag {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    z-index: 4;
+    text-shadow: 0 0 4px var(--green);
+  }
+
+  .avatar-tag-r {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--red);
+    letter-spacing: 0.1em;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .avatar-tag-r::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: var(--red);
+    border-radius: 50%;
+    box-shadow: 0 0 4px var(--red);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .name-block h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(28px, 4.5vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .name-block h1 span {
+    color: var(--cyan);
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  }
+
+  .name-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    margin-top: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .status-bar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+
+  .status-item { display: flex; align-items: center; gap: 6px; }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1px solid var(--line-bright);
+    background: var(--bg-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--cyan);
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== NAV ===== */
+  .nav {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+    border: 1px solid var(--line);
+    background: var(--bg-1);
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+
+  .nav a {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 16px;
+    text-align: center;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .nav a:hover {
+    color: var(--cyan);
+    background: var(--bg-2);
+    border-color: var(--line-bright);
+  }
+
+  .nav a::before { content: '▸ '; color: var(--cyan-dim); }
+
+  /* ===== MODULES ===== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+  }
+
+  .module {
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .module-title {
+    color: var(--cyan);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .module-title::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+  }
+
+  .module-id { color: var(--text-mute); font-size: 10px; }
+
+  .module-body { padding: 20px; }
+
+  .col-4 { grid-column: span 4; }
+  .col-6 { grid-column: span 6; }
+  .col-8 { grid-column: span 8; }
+  .col-12 { grid-column: span 12; }
+
+  @media (max-width: 900px) {
+    .col-4, .col-6, .col-8 { grid-column: span 12; }
+  }
+
+  /* ===== ABOUT ===== */
+  .about-text {
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .about-text strong { color: var(--text); font-weight: 500; }
+  .about-text .highlight { color: var(--cyan); font-weight: 500; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .kpi {
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+    padding: 14px;
+    position: relative;
+  }
+
+  .kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1;
+    text-shadow: 0 0 12px rgba(0, 255, 157, 0.3);
+  }
+
+  .kpi-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 8px;
+  }
+
+  .kpi::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 20px; height: 20px;
+    border-top: 1px solid var(--cyan-dim);
+    border-right: 1px solid var(--cyan-dim);
+  }
+
+  /* ===== LOG ===== */
+  .log-entry {
+    border-left: 2px solid var(--line-bright);
+    padding: 16px 0 16px 20px;
+    position: relative;
+    margin-bottom: 4px;
+  }
+
+  .log-entry::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 22px;
+    width: 12px; height: 12px;
+    background: var(--bg-0);
+    border: 2px solid var(--cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+  }
+
+  .log-entry:last-child { border-left-color: transparent; }
+
+  .log-head {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 6px;
+    align-items: baseline;
+  }
+
+  .log-company {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .log-period {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 0.05em;
+  }
+
+  .log-role {
+    font-size: 12px;
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 10px;
+    letter-spacing: 0.03em;
+  }
+
+  .log-desc {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .log-desc ul { list-style: none; padding: 0; }
+
+  .log-desc li {
+    padding-left: 18px;
+    position: relative;
+    margin-bottom: 4px;
+  }
+
+  .log-desc li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--cyan);
+    font-weight: bold;
+  }
+
+  .log-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .log-tags span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 7px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+
+  /* ===== SKILLS ===== */
+  .skill-group { margin-bottom: 22px; }
+  .skill-group:last-child { margin-bottom: 0; }
+
+  .skill-group-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed var(--line);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .skill-group-title span { color: var(--cyan-dim); }
+
+  .chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 11px;
+    background: var(--bg-2);
+    border: 1px solid var(--line-bright);
+    color: var(--text);
+    transition: all 0.2s;
+  }
+
+  .chip::before { content: '▫'; color: var(--cyan-dim); margin-right: 6px; }
+
+  .chip:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: var(--bg-3);
+    transform: translateY(-1px);
+  }
+
+  /* ===== DESIGN ===== */
+  .design-module {
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+    border-color: var(--line-bright);
+  }
+
+  .design-module .module-title { color: var(--orange); }
+  .design-module .module-title::before { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+
+  .design-text {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .design-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .design-tools span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 9px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    color: var(--orange);
+  }
+
+  .design-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid var(--orange);
+    color: var(--orange);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .design-link:hover {
+    background: var(--orange);
+    color: var(--bg-0);
+    box-shadow: 0 0 20px rgba(255, 149, 0, 0.4);
+  }
+
+  /* ===== MAP (Яндекс через iframe) ===== */
+  .map-wrap {
+    position: relative;
+    height: 400px;
+    background: var(--bg-2);
+    overflow: hidden;
+  }
+
+  .map-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    filter: invert(0.92) hue-rotate(180deg) saturate(0.8) brightness(0.95) contrast(1.05);
+  }
+
+  .map-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border: 1px solid var(--line-bright);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+  }
+
+  .map-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 212, 255, 0.02) 3px,
+      rgba(0, 212, 255, 0.02) 4px
+    );
+  }
+
+  .map-crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px; height: 60px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .map-crosshair::before,
+  .map-crosshair::after {
+    content: '';
+    position: absolute;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+  }
+
+  .map-crosshair::before {
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    transform: translateY(-50%);
+  }
+
+  .map-crosshair::after {
+    left: 50%; top: 0; bottom: 0;
+    width: 1px;
+    transform: translateX(-50%);
+  }
+
+  .map-info {
+    padding: 12px 14px;
+    background: var(--bg-2);
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .map-info span b { color: var(--cyan); font-weight: 500; }
+  .map-info a { color: var(--cyan); text-decoration: none; }
+  .map-info a:hover { text-decoration: underline; }
+
+  /* ===== EDUCATION ===== */
+  .edu-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .edu-table th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+
+  .edu-table td {
+    padding: 12px;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+
+  .edu-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--orange);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .edu-table td b {
+    color: var(--text);
+    font-weight: 500;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* ===== CONTACTS ===== */
+  .contacts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+
+  .contact-item:hover {
+    border-color: var(--cyan);
+    background: var(--bg-3);
+    transform: translateY(-2px);
+  }
+
+  .contact-icon {
+    width: 36px; height: 36px;
+    border: 1px solid var(--cyan-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--cyan);
+    flex-shrink: 0;
+  }
+
+  .contact-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .contact-value {
+    font-size: 13px;
+    color: var(--text);
+    margin-top: 2px;
+    word-break: break-all;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    background: var(--bg-1);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.05em;
+  }
+
+  .footer .ok { color: var(--green); }
+
+  /* ===== БЕГУЩИЙ ЧЕЛОВЕЧЕК (под текстом) ===== */
+  .runner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 40px;
+    pointer-events: none;
+    z-index: 5; /* между фоном (0) и контентом (10) — ПОД текстом */
+    transition: transform 0.05s linear;
+    will-change: transform;
+  }
+
+  .runner svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .runner .body-part {
+    stroke: var(--cyan);
+    stroke-width: 2;
+    stroke-linecap: round;
+    fill: none;
+    filter: drop-shadow(0 0 4px rgba(0, 212, 255, 0.6));
+  }
+
+  .runner .head {
+    fill: var(--cyan);
+    filter: drop-shadow(0 0 4px rgba(0, 212, 255, 0.6));
+  }
+
+  .runner.running .leg-l { animation: legL 0.35s infinite ease-in-out; transform-origin: 16px 24px; }
+  .runner.running .leg-r { animation: legR 0.35s infinite ease-in-out; transform-origin: 16px 24px; }
+  .runner.running .arm-l { animation: armL 0.35s infinite ease-in-out; transform-origin: 16px 14px; }
+  .runner.running .arm-r { animation: armR 0.35s infinite ease-in-out; transform-origin: 16px 14px; }
+
+  @keyframes legL {
+    0%, 100% { transform: rotate(-30deg); }
+    50% { transform: rotate(30deg); }
+  }
+  @keyframes legR {
+    0%, 100% { transform: rotate(30deg); }
+    50% { transform: rotate(-30deg); }
+  }
+  @keyframes armL {
+    0%, 100% { transform: rotate(25deg); }
+    50% { transform: rotate(-25deg); }
+  }
+  @keyframes armR {
+    0%, 100% { transform: rotate(-25deg); }
+    50% { transform: rotate(25deg); }
+  }
+
+  .runner-trail {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: var(--cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0.6;
+    box-shadow: 0 0 6px var(--cyan);
+    animation: fadeTrail 0.8s forwards;
+  }
+
+  @keyframes fadeTrail {
+    to { opacity: 0; transform: scale(0.2); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background: var(--line-bright); border: 2px solid var(--bg-0); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--cyan-dim); }
+
+  .scan-line {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 100;
+    animation: scan 8s linear infinite;
+  }
+
+  @keyframes scan {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100vh); }
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 12px; }
+    .header { padding: 20px; }
+    .name-block h1 { font-size: 28px; }
+    .avatar { width: 72px; height: 72px; }
+    .avatar-inner { font-size: 24px; }
+    .status-bar { font-size: 10px; gap: 10px; }
+    .runner { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scan-line"></div>
+
+<!-- БЕГУЩИЙ ЧЕЛОВЕЧЕК -->
+<div class="runner" id="runner">
+  <svg viewBox="0 0 32 40">
+    <circle class="head" cx="16" cy="6" r="4"/>
+    <line class="body-part" x1="16" y1="10" x2="16" y2="24"/>
+    <line class="body-part arm-l" x1="16" y1="14" x2="8" y2="22"/>
+    <line class="body-part arm-r" x1="16" y1="14" x2="24" y2="22"/>
+    <line class="body-part leg-l" x1="16" y1="24" x2="10" y2="38"/>
+    <line class="body-part leg-r" x1="16" y1="24" x2="22" y2="38"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-top">
+      <div class="name-block">
+        <div class="avatar avatar-corners">
+          <div class="avatar-inner">БХ</div>
+          <div class="avatar-tag">CAM-01</div>
+          <div class="avatar-tag-r">REC</div>
+        </div>
+        <div>
+          <h1>Булат <span>Хайрльварин</span></h1>
+          <div class="name-sub">// software engineer · automation · ufa</div>
+        </div>
+      </div>
+      <div class="status-bar">
+        <div class="status-item"><span class="status-dot"></span>ONLINE</div>
+        <div class="status-item">SYS: <span style="color:var(--green)">NOMINAL</span></div>
+        <div class="status-item">ID: <span style="color:var(--cyan)">BUL-07</span></div>
+        <div class="status-item"><span class="tag">v2.9</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="#about">Обзор</a>
+    <a href="#dev">Разработка</a>
+    <a href="#skills">Навыки</a>
+    <a href="#design">Дизайн</a>
+    <a href="#map">Локация</a>
+    <a href="#edu">Образование</a>
+    <a href="#contacts">Контакт</a>
+  </nav>
+
+  <div class="grid">
+
+    <!-- ABOUT -->
+    <section class="module col-8" id="about">
+      <div class="module-header">
+        <div class="module-title">Оператор · Профиль</div>
+        <div class="module-id">MOD-01 / ABOUT</div>
+      </div>
+      <div class="module-body">
+        <p class="about-text">
+          <strong>Магистр информатики и вычислительной техники.</strong> Инженерный бэкграунд в АСУ ТП: SCADA-конфигурации, контроллеры, пусконаладка. Сегодня работаю <span class="highlight">в связке с ИИ</span> — это ускоряет разработку в разы: веб-конфигураторы, препресс-скрипты, Telegram-боты. <strong>Самообучаем:</strong> если задача требует — вспомню забытое или быстро освою новое и доведу решение до внедрения.
+        </p>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-value">10+</div>
+            <div class="kpi-label">лет в профессии</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-value">30→10</div>
+            <div class="kpi-label">мин / подготовка макета</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-value">2ч→5м</div>
+            <div class="kpi-label">расчёт заказа</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-value">−70%</div>
+            <div class="kpi-label">времени на концепты</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTS -->
+    <section class="module col-4" id="contacts">
+      <div class="module-header">
+        <div class="module-title">Каналы связи</div>
+        <div class="module-id">MOD-02 / COM</div>
+      </div>
+      <div class="module-body">
+        <div class="contacts">
+          <a class="contact-item" href="mailto:bullez@mail.ru">
+            <div class="contact-icon">@</div>
+            <div>
+              <div class="contact-label">E-mail</div>
+              <div class="contact-value">bullez@mail.ru</div>
+            </div>
+          </a>
+          <a class="contact-item" href="https://t.me/BULLEZ" target="_blank">
+            <div class="contact-icon">✈</div>
+            <div>
+              <div class="contact-label">Telegram</div>
+              <div class="contact-value">@BULLEZ</div>
+            </div>
+          </a>
+          <a class="contact-item" href="https://bullez.github.io/designer/" target="_blank">
+            <div class="contact-icon">◈</div>
+            <div>
+              <div class="contact-label">Дизайн-портфолио</div>
+              <div class="contact-value">bullez.github.io</div>
+            </div>
+          </a>
+          <a class="contact-item" href="#map">
+            <div class="contact-icon">⌖</div>
+            <div>
+              <div class="contact-label">Текущая локация</div>
+              <div class="contact-value">Уфа · см. карту</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section class="module col-12" id="dev">
+      <div class="module-header">
+        <div class="module-title">Журнал операций · Опыт</div>
+        <div class="module-id">MOD-03 / LOG</div>
+      </div>
+      <div class="module-body">
+
+        <div class="log-entry">
+          <div class="log-head">
+            <div class="log-company">Добрый Картон · Уфа</div>
+            <div class="log-period">03.2026 — 09.2026</div>
+          </div>
+          <div class="log-role">Автоматизация препресса и производства</div>
+          <div class="log-desc">
+            <ul>
+              <li>Скрипты для Illustrator: пунктир → отдельные контуры для плоттера (пакетно до 100 путей, алгоритм Де Кастельжо), автосоединение контуров с допуском, расчёт площади объектов для сметы.</li>
+              <li>Калькулятор скорости смены заказа: производительность линий и поиск «узкого места» по диаграммам скоростей.</li>
+              <li>Конфигуратор техкарты гофроящика (А1/В1, ГОСТ 9142-2014): развёртка, 3D-модель, проверка допусков станков, укладка на паллеты.</li>
+              <li>Технологические карты в 1С:Предприятие и Opti-Corrugated. Ошибки на препрессе исключены.</li>
+            </ul>
+          </div>
+          <div class="log-tags">
+            <span>JSX</span><span>HTML/JS</span><span>3D</span><span>Illustrator</span><span>1С</span><span>Opti-Corrugated</span>
+          </div>
+        </div>
+
+        <div class="log-entry">
+          <div class="log-head">
+            <div class="log-company">Частная практика · Уфа</div>
+            <div class="log-period">08.2025 — 12.2025</div>
+          </div>
+          <div class="log-role">Python-разработчик · автоматизация процессов</div>
+          <div class="log-desc">
+            <ul>
+              <li>Telegram-боты: автоматизация задач дизайнера (шаблоны, масштабирование, переименование, сортировка) и мониторинг каналов по ключевым словам.</li>
+              <li>Адаптивные сайты на HTML/CSS. Сертификат «Поколение Python» (2025).</li>
+            </ul>
+          </div>
+          <div class="log-tags">
+            <span>Python</span><span>Telegram Bot</span><span>HTML/CSS</span>
+          </div>
+        </div>
+
+        <div class="log-entry">
+          <div class="log-head">
+            <div class="log-company">Уфимский научно-технический центр · Уфа</div>
+            <div class="log-period">08.2019 — 10.2019</div>
+          </div>
+          <div class="log-role">Программист-разработчик · C#</div>
+          <div class="log-desc">
+            <ul>
+              <li>Моделирование и обработка промысловых экспериментов; корпоративные информационно-аналитические системы.</li>
+              <li>ПО для основного производства, комплекс для мониторинга и разработки месторождений, ИТ для выбора скважин под ГТМ.</li>
+            </ul>
+          </div>
+          <div class="log-tags">
+            <span>C#</span><span>.NET</span><span>ООП</span>
+          </div>
+        </div>
+
+        <div class="log-entry">
+          <div class="log-head">
+            <div class="log-company">СКАДтех · Уфа</div>
+            <div class="log-period">11.2018 — 09.2019</div>
+          </div>
+          <div class="log-role">Инженер-программист АСУ · SCADA</div>
+          <div class="log-desc">
+            <ul>
+              <li>Конфигурации для SCADA-пакетов; интерфейсы и взаимодействие SCADA ⇄ персонал.</li>
+              <li>Установка и настройка ПО на объектах заказчика, настройка контроллеров и оборудования.</li>
+              <li>Пусконаладка и испытания; руководство по работе с системой.</li>
+            </ul>
+          </div>
+          <div class="log-tags">
+            <span>SCADA</span><span>АСУ ТП</span><span>ПЛК</span><span>ПНР</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section class="module col-6" id="skills">
+      <div class="module-header">
+        <div class="module-title">Параметры системы · Навыки</div>
+        <div class="module-id">MOD-04 / SKL</div>
+      </div>
+      <div class="module-body">
+
+        <div class="skill-group">
+          <div class="skill-group-title">Языки и платформы <span>[CORE]</span></div>
+          <div class="chip-list">
+            <span class="chip">C# / .NET</span>
+            <span class="chip">Python</span>
+            <span class="chip">JavaScript</span>
+            <span class="chip">JSX</span>
+            <span class="chip">HTML / CSS</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-title">АСУ ТП и промышленность <span>[IND]</span></div>
+          <div class="chip-list">
+            <span class="chip">SCADA</span>
+            <span class="chip">1С:Предприятие</span>
+            <span class="chip">ПЛК</span>
+            <span class="chip">ПНР</span>
+            <span class="chip">ГОСТ 9142-2014</span>
+            <span class="chip">Opti-Corrugated</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-title">Web и автоматизация <span>[WEB]</span></div>
+          <div class="chip-list">
+            <span class="chip">Telegram Bot API</span>
+            <span class="chip">Битрикс24</span>
+            <span class="chip">3D-конфигураторы</span>
+            <span class="chip">Препресс-скрипты</span>
+            <span class="chip">Git</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-title">ИИ-инструменты <span>[AI]</span></div>
+          <div class="chip-list">
+            <span class="chip">ChatGPT</span>
+            <span class="chip">Qwen</span>
+            <span class="chip">Midjourney</span>
+            <span class="chip">Kling</span>
+            <span class="chip">Vibe-coding</span>
+            <span class="chip">Notion AI</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-title">Таск-трекеры и документация <span>[OPS]</span></div>
+          <div class="chip-list">
+            <span class="chip">Trello</span>
+            <span class="chip">Yougile</span>
+            <span class="chip">Notion</span>
+            <span class="chip">Чертежи / ГОСТ</span>
+            <span class="chip">Эксплуатационные РЭ</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- DESIGN -->
+    <section class="module design-module col-6" id="design">
+      <div class="module-header">
+        <div class="module-title">Второй контур · Дизайн</div>
+        <div class="module-id">MOD-05 / DES</div>
+      </div>
+      <div class="module-body">
+        <p class="design-text">
+          <strong style="color:var(--orange)">10+ лет в графическом дизайне.</strong>
+          Студия «Банан» (старший дизайнер, руководитель отдела), «Нефтяная кухня» (проект с Роснефтью, Татнефтью, СИБУРом, Башнефтью), Абсолют-Медиа. Фирменные стили, упаковка, полиграфия, наружная реклама.
+        </p>
+
+        <div class="design-tools">
+          <span>Illustrator</span>
+          <span>Photoshop</span>
+          <span>InDesign</span>
+          <span>Figma</span>
+          <span>Corel Draw</span>
+          <span>Blender</span>
+          <span>Tilda</span>
+        </div>
+
+        <a class="design-link" href="https://bullez.github.io/designer/" target="_blank">
+          Открыть портфолио →
+        </a>
+      </div>
+    </section>
+
+    <!-- MAP (Яндекс через iframe) -->
+    <section class="module col-12" id="map">
+      <div class="module-header">
+        <div class="module-title">Координаты · Текущая локация</div>
+        <div class="module-id">MOD-06 / GEO</div>
+      </div>
+      <div class="map-wrap">
+        <iframe
+          src="https://yandex.ru/map-widget/v1/?ll=56.013812%2C54.763696&z=16&l=map&pt=56.013812%2C54.763696%2Cpm2blm"
+          loading="lazy"
+          allowfullscreen
+          title="Яндекс.Карта — текущая локация"></iframe>
+        <div class="map-overlay">
+          <div class="map-crosshair"></div>
+        </div>
+      </div>
+      <div class="map-info">
+        <span>STATUS: <b style="color:var(--green)">● CURRENT POSITION</b></span>
+        <span>LAT: <b>54.763696</b></span>
+        <span>LON: <b>56.013812</b></span>
+        <span>TZ: <b>UTC+5 · YEKT</b></span>
+        <a href="https://yandex.ru/maps/?pt=56.013812,54.763696&z=16&l=map" target="_blank">↗ Яндекс.Карты</a>
+      </div>
+    </section>
+
+    <!-- EDUCATION -->
+    <section class="module col-12" id="edu">
+      <div class="module-header">
+        <div class="module-title">Архив · Образование и языки</div>
+        <div class="module-id">MOD-07 / EDU</div>
+      </div>
+      <div class="module-body">
+        <table class="edu-table">
+          <thead>
+            <tr>
+              <th>Год</th>
+              <th>Степень</th>
+              <th>Учебное заведение / Специальность</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2019</td>
+              <td><b>Магистр</b></td>
+              <td>УГНТУ · Информатика и вычислительная техника (факультет автоматизации производственных процессов)</td>
+            </tr>
+            <tr>
+              <td>2015</td>
+              <td><b>Бакалавр</b></td>
+              <td>УГНТУ · Эксплуатация и обслуживание объектов добычи газа, газоконденсата и подземных хранилищ</td>
+            </tr>
+            <tr>
+              <td>—</td>
+              <td><b>Языки</b></td>
+              <td>Русский — родной · Английский — B1 · Немецкий — A2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>SYS://BULAT_RESUME <span class="ok">● OK</span></div>
+    <div>BUILD 2026.10.15 · SESSION ACTIVE</div>
+    <div>UFA · RU · 54.7637N 56.0138E</div>
+  </div>
+
+</div>
+
+<script>
+  /* ===== Плавная прокрутка ===== */
+  document.querySelectorAll('.nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href');
+      if (id && id.startsWith('#')) {
+        const el = document.querySelector(id);
+        if (el) {
+          e.preventDefault();
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+  });
+
+  /* ===== БЕГУЩИЙ ЧЕЛОВЕЧЕК (под текстом, плавное следование) ===== */
+  const runner = document.getElementById('runner');
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let runnerX = mouseX;
+  let runnerY = mouseY;
+  let lastRunnerX = runnerX;
+  let lastRunnerY = runnerY;
+  let lastTrailTime = 0;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animateRunner() {
+    // Плавное следование (lerp)
+    const dx = mouseX - runnerX;
+    const dy = mouseY - runnerY;
+    runnerX += dx * 0.08;
+    runnerY += dy * 0.08;
+
+    const moveDx = runnerX - lastRunnerX;
+    const moveDy = runnerY - lastRunnerY;
+    const speed = Math.hypot(moveDx, moveDy);
+
+    // Поворот по направлению движения
+    if (speed > 0.5) {
+      const flip = moveDx < 0 ? -1 : 1;
+      runner.style.transform = `translate(${runnerX - 16}px, ${runnerY - 20}px) scaleX(${flip})`;
+
+      // Включаем анимацию бега
+      if (!runner.classList.contains('running')) {
+        runner.classList.add('running');
+      }
+
+      // Следы при быстром движении
+      const now = performance.now();
+      if (speed > 2 && now - lastTrailTime > 70) {
+        lastTrailTime = now;
+        const trail = document.createElement('div');
+        trail.className = 'runner-trail';
+        trail.style.left = (runnerX - 2) + 'px';
+        trail.style.top = (runnerY + 10) + 'px';
+        document.body.appendChild(trail);
+        setTimeout(() => trail.remove(), 800);
+      }
+    } else {
+      runner.classList.remove('running');
+    }
+
+    lastRunnerX = runnerX;
+    lastRunnerY = runnerY;
+    requestAnimationFrame(animateRunner);
+  }
+
+  animateRunner();
+</script>
+
+</body>
+</html>
