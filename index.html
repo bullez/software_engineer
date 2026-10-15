@@ -156,6 +156,15 @@
     text-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
     z-index: 1;
   }
+  
+  .avatar-inner img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	filter: saturate(0.85) contrast(1.05) brightness(0.95);
+	/* лёгкая «индустриальная» обработка, чтобы вписалась в SCADA-тему */
+  }
 
   .avatar-corners::before,
   .avatar-corners::after {
@@ -914,7 +923,7 @@
     <div class="header-top">
       <div class="name-block">
         <div class="avatar avatar-corners">
-          <div class="avatar-inner">БХ</div>
+          <div class="avatar-inner img"><img src="photo.png" alt="Хайрльварин Булат"></div>
           <div class="avatar-tag">CAM-01</div>
           <div class="avatar-tag-r">REC</div>
         </div>
@@ -992,11 +1001,11 @@
               <div class="contact-value">bullez@mail.ru</div>
             </div>
           </a>
-          <a class="contact-item" href="https://t.me/BULLEZ" target="_blank">
+          <a class="contact-item" href="https://t.me/bullez" target="_blank">
             <div class="contact-icon">✈</div>
             <div>
               <div class="contact-label">Telegram</div>
-              <div class="contact-value">@BULLEZ</div>
+              <div class="contact-value">@bullez</div>
             </div>
           </a>
           <a class="contact-item" href="https://bullez.github.io/designer/" target="_blank">
